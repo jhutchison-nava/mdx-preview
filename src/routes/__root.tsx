@@ -22,7 +22,8 @@ export const Route = createRootRoute({
       },
     ],
     links: [
-      { rel: 'icon', href: '/favicon.ico' },
+      { rel: 'icon', href: `${import.meta.env.BASE_URL}favicon.ico` },
+      { rel: 'manifest', href: `${import.meta.env.BASE_URL}site.webmanifest` },
       { rel: 'stylesheet', href: appCss },
     ],
   }),
@@ -47,8 +48,9 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html>
+    <html lang="en">
       <head>
+        <title>MDX Editor</title>
         <HeadContent />
       </head>
       <body>

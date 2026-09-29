@@ -15,10 +15,7 @@ export function NotFound({ children }: { children?: any }) {
           Go back
         </button>
         <Link
-          to="/$"
-          params={{
-            publicId: '',
-          }}
+          to="/"
           className="bg-cyan-600 text-white px-2 py-1 rounded uppercase font-black text-sm"
         >
           Start Over

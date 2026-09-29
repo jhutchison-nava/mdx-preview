@@ -1,12 +1,16 @@
 # mdx-preview
 
-A live MDX preview editor built with TanStack Start, deployed to **Cloudflare Workers**.
+A live MDX preview editor built with TanStack Start in [SPA mode](https://tanstack.com/start/latest/docs/framework/react/guide/spa-mode), deployed as static files to **GitHub Pages**.
 
 ## Stack
 
-- [TanStack Start](https://tanstack.com/start) + React 19, bundled by Vite with [`@cloudflare/vite-plugin`](https://developers.cloudflare.com/workers/vite-plugin/)
-- Prisma (`runtime = "cloudflare"`) talking to Postgres through [Prisma Accelerate](https://www.prisma.io/accelerate)
+- [TanStack Start](https://tanstack.com/start) (SPA mode) + React 19, bundled by Vite
 - CodeMirror editor, USWDS styles
+- No backend: MDX is compiled and rendered in the browser
+
+## Saving
+
+The editor's content is saved to the browser's `localStorage` on every change, so it survives reloads. It is only stored on that browser and device. **Reset** (with a confirmation prompt) clears the saved copy and restores the default example content. To share a document, copy the markdown.
 
 ## Development
 
@@ -15,45 +19,19 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` runs Vite with the Cloudflare plugin, so the server code executes in `workerd` — the same runtime as production.
-
-### Environment variables
-
-Server-side secrets are read from `process.env` (enabled by the `nodejs_compat` flag in `wrangler.jsonc`).
-
-- **Local:** put them in `.dev.vars` (gitignored). At minimum:
-
-  ```sh
-  DATABASE_URL="prisma+postgres://..."   # Prisma Accelerate connection string
-  ```
-
-- **Production:** upload them as Worker secrets:
-
-  ```sh
-  pnpm exec wrangler secret put DATABASE_URL
-  ```
-
-`.env` is only used by the Prisma CLI (`prisma/prisma.config.ts` loads it via dotenv) for migrations and `prisma generate`.
-
-## Database
+## Building
 
 ```sh
-pnpm prisma migrate dev     # create/apply a migration
-pnpm prisma generate        # regenerate the client into ./generated/prisma
-pnpm db-tunnel              # local tunnel to Prisma Postgres
+pnpm build                          # static site in ./dist/client
+BASE_PATH=/mdx-preview/ pnpm build  # build for a GitHub Pages project site
+pnpm preview
+pnpm typecheck
 ```
+
+`pnpm build` prerenders a SPA shell to `dist/client/index.html` and copies it to `404.html`, so GitHub Pages falls back to the app for unknown paths.
 
 ## Deploying
 
-```sh
-pnpm deploy                 # vite build && wrangler deploy
-```
+`.github/workflows/deploy.yml` builds and deploys to GitHub Pages on every push to `main`. It sets `BASE_PATH` from the Pages configuration, so it works for both `/<repo>/` project sites and custom domains.
 
-Other useful commands:
-
-```sh
-pnpm build                  # build client + Worker into ./dist
-pnpm typecheck              # tsc --noEmit
-pnpm cf-typegen             # regenerate worker-configuration.d.ts from wrangler.jsonc
-pnpm exec wrangler deploy --dry-run   # verify the bundle without publishing
-```
+One-time setup: in the repo, go to **Settings → Pages → Build and deployment → Source** and select **GitHub Actions**.

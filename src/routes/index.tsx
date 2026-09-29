@@ -1,8 +1,6 @@
 import { Menu } from '@ark-ui/react/menu'
 import { Splitter, useSplitter } from '@ark-ui/react/splitter'
-import { useForm, useStore } from '@tanstack/react-form'
-import { createFileRoute, Link, notFound, stripSearchParams, useNavigate } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
+import { createFileRoute, Link, stripSearchParams, useNavigate } from '@tanstack/react-router'
 import { zodValidator } from '@tanstack/zod-adapter'
 import { cx } from 'cva.config'
 import * as React from 'react'
@@ -11,7 +9,7 @@ import { z } from 'zod'
 
 import { NotFound } from 'src/components/NotFound'
 import Preview from 'src/components/preview'
-import { createPost, getPost } from 'src/utils/server-functions'
+import { clearContent, loadContent, saveContent } from 'src/utils/storage'
 
 const searchSchema = z.object({
   show_navbar: z.boolean().default(false).optional(),
@@ -25,7 +23,7 @@ const SimpleEditor = React.lazy(() => import('src/components/simple-editor').the
   default: mod.default,
 })))
 
-export const Route = createFileRoute('/$')({
+export const Route = createFileRoute('/')({
   component: NewPreview,
   notFoundComponent: () => <NotFound />,
   validateSearch: zodValidator(searchSchema),
@@ -40,93 +38,39 @@ export const Route = createFileRoute('/$')({
       }),
     ],
   },
-  params: {
-    stringify: (params: { publicId?: string }) => {
-      return {
-        _splat: params.publicId,
-      }
-    },
-    parse: ({ _splat }) => {
-      const publicId = _splat?.split('/')[0] || ''
-      if (publicId === '') {
-        return {
-          publicId: undefined,
-        }
-      }
-      return {
-        publicId,
-      }
-    },
-  },
-  loader: async ({ params }) => {
-    if (!params.publicId) {
-      return {
-        post: null,
-      }
-    }
-
-    const post = await getPost({ data: params.publicId })
-    if (!post) {
-      throw notFound()
-    }
-
-    return {
-      post,
-    }
-  },
 })
 
 function NewPreview() {
-  const { post } = Route.useLoaderData()
   const {
     show_navbar: showNavbar,
     show_sidebar: showSidebar,
     // show_toc: showToc,
   } = Route.useSearch()
 
-  const handleCreatePost = useServerFn(createPost)
   const navigate = useNavigate({
-    from: '/$',
+    from: '/',
   })
+  const [markdown, setMarkdown] = React.useState(() => loadContent() ?? initialContent)
+  // The editor only reads its initial value, so remount it to load new content
+  const [editorKey, setEditorKey] = React.useState(0)
 
-  const form = useForm({
-    defaultValues: {
-      markdown: post?.content || initialContent,
-    },
-    onSubmit: async ({ value }) => {
-      const formData = new FormData()
-      formData.append('markdown', value.markdown)
+  const handleChange = (value: string) => {
+    setMarkdown(value)
+    saveContent(value)
+  }
 
-      const res = await handleCreatePost({ data: formData })
-
-      await navigate({
-        to: '/$',
-        params: { publicId: res.publicId },
-        search: prev => prev,
-      })
-
-      form.reset()
-    },
-  })
-
-  const isDirty = useStore(form.store, state => state.isDirty)
-
-  React.useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault()
-      }
+  const handleReset = () => {
+    if (!window.confirm('Replace your content with the default example? This can\'t be undone.')) {
+      return
     }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  }, [isDirty])
+    clearContent()
+    setMarkdown(initialContent)
+    setEditorKey(key => key + 1)
+  }
 
   const handleUpdateSetting = (payload: SearchParams) => {
     navigate({
-      to: '/$',
-      params: prev => prev,
+      to: '/',
       search: prev => ({
         ...prev,
         ...payload,
@@ -157,10 +101,7 @@ function NewPreview() {
             {/* <FileText className="h-6 w-6 text-indigo-600" /> */}
             <h1 className="text-xl font-semibold text-gray-900">
               <Link
-                to="/$"
-                params={{
-                  publicId: '',
-                }}
+                to="/"
                 reloadDocument
               >
                 MDX Editor
@@ -254,33 +195,14 @@ function NewPreview() {
                     </>
                   )}
             </button>
-            <form.Subscribe
-              selector={state => [state.isSubmitting, state.isPristine]}
-              children={([isSubmitting, isPristine]) => (
-                <button
-                  type="submit"
-                  form="editor"
-                  disabled={isPristine}
-                  className={cx('h-10 inline-flex items-center px-3 border border-blue-500 shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 cursor-pointer relative disabled:opacity-40 disabled:cursor-not-allowed', {
-                    'opacity-40': isSubmitting,
-                  })}
-                >
-                  <span className={cx({
-                    invisible: isSubmitting,
-                  })}
-                  >
-                    Share
-                  </span>
-                  {isSubmitting
-                    ? (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="icon-[material-symbols--progress-activity] animate-spin"></span>
-                        </div>
-                      )
-                    : null}
-                </button>
-              )}
-            />
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={markdown === initialContent}
+              className={cx('h-10 inline-flex items-center px-3 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed')}
+            >
+              Reset
+            </button>
           </div>
         </div>
       </header>
@@ -291,38 +213,18 @@ function NewPreview() {
           <Splitter.Panel id="a">
             {/* Editor */}
             <div className="h-full">
-              <form
-                id="editor"
-                className="h-full"
-                method="POST"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  form.handleSubmit()
-                }}
-              >
-                {/* <input type="hidden" name="content" value={markdown} /> */}
-                <div className="size-full">
-                  <React.Suspense fallback={(
-                    <div className="h-full flex items-center justify-center">
-                      <span className="icon-[material-symbols--progress-activity] animate-spin size-10 bg-gray-400"></span>
-                    </div>
-                  )}
-                  >
-                    <form.Field
-                      name="markdown"
-                      children={field => (
-                        <SimpleEditor
-                          defaultValue={field.state.value}
-                          onChange={(value) => {
-                            field.handleChange(value || '')
-                          }}
-                        />
-                      )}
-                    />
-                  </React.Suspense>
+              <React.Suspense fallback={(
+                <div className="h-full flex items-center justify-center">
+                  <span className="icon-[material-symbols--progress-activity] animate-spin size-10 bg-gray-400"></span>
                 </div>
-              </form>
+              )}
+              >
+                <SimpleEditor
+                  key={editorKey}
+                  defaultValue={markdown}
+                  onChange={handleChange}
+                />
+              </React.Suspense>
             </div>
           </Splitter.Panel>
           <Splitter.ResizeTrigger id="a:b" aria-label="Resize" className="items-center group outline-none tablet:flex h-full w-1.5 bg-gray-300 hover:bg-blue-500 hover:outline-2 [[data-focus]]:bg-blue-500 transition-colors duration-300" />
@@ -330,14 +232,7 @@ function NewPreview() {
             {/* Preview */}
             <div className={cx('h-full')}>
               <div className="h-full bg-white relative">
-                <form.Subscribe
-                  selector={state => state}
-                  children={state => (
-                    <Preview
-                      content={state.values.markdown}
-                    />
-                  )}
-                />
+                <Preview content={markdown} />
               </div>
             </div>
           </Splitter.Panel>

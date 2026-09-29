@@ -3,7 +3,7 @@
 /* eslint-disable antfu/no-import-dist */
 import * as React from 'react'
 
-import { Route } from 'src/routes/$'
+import { Route } from 'src/routes/index'
 import { compileMdx } from 'src/utils/compile-mdx'
 
 import uswdsCss from '../../node_modules/@uswds/uswds/dist/css/uswds.css?url'
@@ -49,6 +49,8 @@ export default function Preview({ content }: { content: string }) {
   return (
     <iframe
       ref={iframeRef}
+      // The first message can fire before the iframe's listener exists
+      onLoad={sendHTML}
       sandbox="allow-scripts allow-same-origin"
       srcDoc={`<!DOCTYPE html>
           <html lang="en">
