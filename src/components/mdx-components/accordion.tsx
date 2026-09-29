@@ -1,6 +1,6 @@
 import type { VariantProps } from 'cva'
-import { cva } from 'cva.config'
-import React from 'react'
+import { cva } from 'cva'
+import * as React from 'react'
 
 const accordion = cva({
   base: 'usa-accordion',
@@ -15,13 +15,14 @@ const accordion = cva({
 })
 
 export type AccordionListProps = {
-  children: React.ReactNode
+  class?: string
   multiselectable?: boolean
-} & React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof accordion>
+} & VariantProps<typeof accordion> & React.HTMLAttributes<HTMLDivElement>
 
 export function AccordionList({
   bordered,
   children,
+  class: classAttr,
   className,
   multiselectable,
   ...props
@@ -29,7 +30,7 @@ export function AccordionList({
   return (
     <div
       {...props}
-      className={accordion({ className, multiselectable, bordered })}
+      className={accordion({ className: [classAttr, className], multiselectable, bordered })}
       data-allow-multiple={multiselectable}
     >
       {children}
@@ -38,22 +39,23 @@ export function AccordionList({
 }
 
 export type AccordionItemProps = {
-  'aria-expanded': boolean
-  'children': React.ReactNode
-  'headingText': string
-  'id'?: string
-  'wrapperAs'?: 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+  isExpanded?: boolean
+  heading: string
+  id?: string
+  headingAs?: 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 } & React.HTMLAttributes<HTMLDivElement>
+
 export function AccordionItem({
-  'aria-expanded': ariaExpanded = false,
   children,
-  headingText,
+  heading,
+  headingAs = 'div',
   id,
-  wrapperAs = 'div',
+  isExpanded = false,
   ...props
 }: AccordionItemProps) {
-  const Element = wrapperAs
+  const Element = headingAs
   const uniqueId = React.useId()
+  const itemId = id || uniqueId
 
   return (
     <>
@@ -61,17 +63,17 @@ export function AccordionItem({
         <button
           className="usa-accordion__button"
           type="button"
-          aria-expanded={ariaExpanded}
-          aria-controls={id || uniqueId}
+          aria-expanded={isExpanded}
+          aria-controls={itemId}
         >
-          {headingText}
+          {heading}
         </button>
       </Element>
       <div
         {...props}
-        id={id || uniqueId}
+        id={itemId}
         className="usa-accordion__content usa-prose"
-        hidden={!ariaExpanded}
+        hidden={!isExpanded}
       >
         {children}
       </div>

@@ -24,3 +24,8 @@ declare module '*.html?raw' {
   const raw: string
   export default raw
 }
+
+declare module '*.svg?raw' {
+  const raw: string
+  export default raw
+}

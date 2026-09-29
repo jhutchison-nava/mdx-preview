@@ -8,6 +8,10 @@ A live MDX preview editor built with TanStack Start in [SPA mode](https://tansta
 - CodeMirror editor, USWDS styles
 - No backend: MDX is compiled and rendered in the browser
 
+## MDX components
+
+The preview supports the components the [Blue Button site](https://github.com/CMSgov/bluebutton-site-static) passes to its MDX, with the same props: `Alert`, `ProcessList`, `ProcessListItem`, `AccordionList`, `AccordionItem`, `IconList`, `Link` and `Image`. Markdown links render with `Link`, and tables with `OverflowTable`. Frontmatter is hidden. Imports (such as images from `#assets/...`) can't be resolved, so they become `undefined` and `Image` shows a placeholder.
+
 ## Saving
 
 The editor's content is saved to the browser's `localStorage` on every change, so it survives reloads. It is only stored on that browser and device. **Reset** (with a confirmation prompt) clears the saved copy and restores the default example content. To share a document, copy the markdown.

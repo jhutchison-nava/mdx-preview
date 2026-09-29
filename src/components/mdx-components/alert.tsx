@@ -1,7 +1,8 @@
 import type { VariantProps } from 'cva'
-import { cva } from 'cva.config'
+import { cva } from 'cva'
+import * as React from 'react'
 
-const infoBox = cva({
+const alert = cva({
   base: 'usa-alert',
   variants: {
     variant: {
@@ -24,55 +25,57 @@ const infoBox = cva({
   },
 })
 
-export type InfoBoxProps = ({
-  'role': 'region'
-  'aria-label': string
-  'aria-labelledby'?: never
-} | {
-  'role': 'alert' | 'status'
+export type AlertProps = ({
+  'role'?: 'region'
   'aria-labelledby'?: string
-  'aria-label'?: never
+} | {
+  'role'?: 'alert' | 'status'
+  'aria-labelledby'?: never
 }) & ({
   size: 'slim'
-  headingText?: never
+  heading?: never
   headingAs?: never
 } | {
   size?: never
-  headingText: string
-  headingAs: 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p'
-}) & React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof infoBox>
+  heading?: string
+  headingAs?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p'
+}) & VariantProps<typeof alert> & Omit<React.HTMLAttributes<HTMLDivElement>, 'role'> & {
+  class?: string
+}
 
-export function InfoBox({
-  'aria-labelledby': ariaLabelledby,
+export function Alert({
   children,
+  class: classAttr,
   className,
-  headingText,
+  heading,
   headingAs = 'p',
   noIcon,
   role = 'alert',
   size,
   variant,
   ...props
-}: InfoBoxProps) {
+}: AlertProps) {
   const Element = headingAs
+  const uniqueId = React.useId()
+  const itemId = role === 'region' ? uniqueId : undefined
 
   return (
     <div
       {...props}
-      className={infoBox({
+      className={alert({
         variant,
         size,
         noIcon,
-        className,
+        className: [classAttr, className],
       })}
       role={role}
-      aria-labelledby={ariaLabelledby}
+      aria-labelledby={itemId}
     >
       <div className="usa-alert__body">
-        {headingText && size !== 'slim'
+        {heading && size !== 'slim'
           ? (
-              <Element className="usa-alert__heading text-bold" id={ariaLabelledby}>
-                {headingText}
+              <Element className="usa-alert__heading text-bold" id={itemId}>
+                {heading}
               </Element>
             )
           : null}
