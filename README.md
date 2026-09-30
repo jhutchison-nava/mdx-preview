@@ -17,6 +17,12 @@ The preview supports the components the [Blue Button site](https://github.com/CM
 
 The editor's content is saved to the browser's `localStorage` on every change, so it survives reloads. It is only stored on that browser and device. **Reset** (with a confirmation prompt) clears the saved copy and restores the default example content. To share a document, copy the markdown.
 
+## Page layout and table of contents
+
+The preview uses the same layout as the site's `DocsLayout`. **Show Navbar**, **Show Sidebar** and **Show TOC** in the settings menu toggle the sample header, the sample side navigation and the table of contents.
+
+The TOC is built from the content's headings (`src/utils/rehype-collect-headings.ts`, like Astro's `headings`) and rendered by a port of the site's `toc.astro`, including its scroll spy. Like the site, it only appears at the `desktop-lg` breakpoint (1200px) and wider, so hide the editor or widen the window to see it.
+
 ## Styles and code blocks
 
 The preview iframe loads `src/styles/uswds/preview.scss`, which compiles USWDS with the Blue Button theme. `_uswds-theme.scss` and `_uswds-theme-custom-styles.scss` are copied from `bluebutton-site-static/src/assets/sass`; the only change is `$theme-font-path`, so Vite can resolve the USWDS fonts. When the site's theme changes, copy the files again.

@@ -44,7 +44,7 @@ function NewPreview() {
   const {
     show_navbar: showNavbar,
     show_sidebar: showSidebar,
-    // show_toc: showToc,
+    show_toc: showToc,
   } = Route.useSearch()
 
   const navigate = useNavigate({
@@ -156,23 +156,23 @@ function NewPreview() {
                     <Menu.ItemText>Show Sidebar</Menu.ItemText>
                   </Menu.CheckboxItem>
 
-                  {/* <Menu.CheckboxItem
-                      className="flex rounded-sm items-center gap-2 px-2 h-10 cursor-pointer bg-white text-gray-900 [[data-highlighted]]:bg-gray-100"
-                      value="show_toc"
-                      checked={Boolean(showToc)}
-                      onCheckedChange={(value) => {
-                        handleUpdateSetting({ show_toc: value })
-                      }}
-                    >
-                      <div className="size-6 flex items-center justify-center">
-                        <Menu.ItemIndicator>
-                          <svg viewBox="0 0 24 24" data-state="checked" className="stroke-white stroke-3 size-3.5 fill-none [stroke-linecap:round] [stroke-linejoin:round]">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                        </Menu.ItemIndicator>
-                      </div>
-                      <Menu.ItemText>Show TOC</Menu.ItemText>
-                    </Menu.CheckboxItem> */}
+                  <Menu.CheckboxItem
+                    className="flex rounded-sm items-center gap-2 px-2 h-10 cursor-pointer bg-white text-gray-900 [[data-highlighted]]:bg-gray-100 group"
+                    value="show_toc"
+                    checked={Boolean(showToc)}
+                    onCheckedChange={(value) => {
+                      handleUpdateSetting({ show_toc: value })
+                    }}
+                  >
+                    <div className="flex items-center justify-center size-4.5 border border-gray-400 rounded-sm bg-white group-[[data-state=checked]]:bg-blue-700 group-[[data-state=checked]]:border-blue-700">
+                      <Menu.ItemIndicator className="flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" data-state="checked" className="stroke-white stroke-3 size-3.5 fill-none [stroke-linecap:round] [stroke-linejoin:round]">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </Menu.ItemIndicator>
+                    </div>
+                    <Menu.ItemText>Show TOC</Menu.ItemText>
+                  </Menu.CheckboxItem>
                 </Menu.Content>
               </Menu.Positioner>
             </Menu.Root>

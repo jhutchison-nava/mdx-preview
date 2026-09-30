@@ -23,6 +23,7 @@
     "@uswds/uswds": "^3.14.0",
     "codemirror": "^6.0.2",
     "cva": "1.0.0-beta.3",
+    "hast-util-to-string": "^3.0.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "rehype-expressive-code": "^0.44.2",

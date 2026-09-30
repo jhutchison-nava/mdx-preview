@@ -15,7 +15,10 @@ import { Image } from 'src/components/mdx-components/image'
 import { Link } from 'src/components/mdx-components/link'
 import { OverflowTable } from 'src/components/mdx-components/overflow-table'
 import { ProcessList, ProcessListItem } from 'src/components/mdx-components/process-list'
+import { TableOfContents } from 'src/components/table-of-contents'
 import { expressiveCodeOptions } from 'src/utils/expressive-code'
+import type { MarkdownHeading } from 'src/utils/rehype-collect-headings'
+import { rehypeCollectHeadings } from 'src/utils/rehype-collect-headings'
 import { remarkStubImports } from 'src/utils/remark-stub-imports'
 
 // Mirrors the components the Blue Button site passes to its MDX content
@@ -40,7 +43,7 @@ export async function compileMdx(markdown: string) {
     // Frontmatter is hidden from the output, like Astro does, and exported for the page title
     remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkStubImports, remarkGfm, remarkSmartypants],
     // Heading ids match Astro's, which also slugs heading text with github-slugger
-    rehypePlugins: [rehypeSlug, [rehypeExpressiveCode, expressiveCodeOptions]],
+    rehypePlugins: [rehypeSlug, rehypeCollectHeadings, [rehypeExpressiveCode, expressiveCodeOptions]],
   })
 
   const result = await run(code, {
@@ -52,10 +55,17 @@ export async function compileMdx(markdown: string) {
 
   // Same structure as the Blue Button page templates: the frontmatter title as the
   // page's h1, followed by the content in a .usa-prose wrapper
-  return renderToString(createElement(Fragment, null,
+  const html = renderToString(createElement(Fragment, null,
     title
       ? createElement('div', { className: 'margin-bottom-4' }, createElement('h1', null, String(title)))
       : null,
     createElement('div', { className: 'usa-prose' }, createElement(result.default, { components })),
   ))
+
+  // Like DocsLayout, drop the "Footnotes" heading added by remark-gfm, and only
+  // render the TOC when there are headings left
+  const headings = ((code.data.headings ?? []) as MarkdownHeading[]).filter(h => h.slug !== 'footnote-label')
+  const toc = headings.length > 0 ? renderToString(createElement(TableOfContents, { headings })) : ''
+
+  return { html, toc }
 }
