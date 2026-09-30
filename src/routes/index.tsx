@@ -9,7 +9,9 @@ import { z } from 'zod'
 
 import { NotFound } from 'src/components/NotFound'
 import Preview from 'src/components/preview'
+import type { SimpleEditorHandle } from 'src/components/simple-editor'
 import { clearContent, loadContent, saveContent } from 'src/utils/storage'
+import { useCompiledMdx } from 'src/utils/use-compiled-mdx'
 
 const searchSchema = z.object({
   show_navbar: z.boolean().default(false).optional(),
@@ -53,6 +55,8 @@ function NewPreview() {
   const [markdown, setMarkdown] = React.useState(() => loadContent() ?? initialContent)
   // The editor only reads its initial value, so remount it to load new content
   const [editorKey, setEditorKey] = React.useState(0)
+  const editorRef = React.useRef<SimpleEditorHandle>(null)
+  const { result, error } = useCompiledMdx(markdown)
 
   const handleChange = (value: string) => {
     setMarkdown(value)
@@ -212,19 +216,55 @@ function NewPreview() {
         <main className="h-full flex">
           <Splitter.Panel id="a">
             {/* Editor */}
-            <div className="h-full">
-              <React.Suspense fallback={(
-                <div className="h-full flex items-center justify-center">
-                  <span className="icon-[material-symbols--progress-activity] animate-spin size-10 bg-gray-400"></span>
-                </div>
-              )}
-              >
-                <SimpleEditor
-                  key={editorKey}
-                  defaultValue={markdown}
-                  onChange={handleChange}
-                />
-              </React.Suspense>
+            <div className="h-full flex flex-col">
+              <div className="flex-1 min-h-0">
+                <React.Suspense fallback={(
+                  <div className="h-full flex items-center justify-center">
+                    <span className="icon-[material-symbols--progress-activity] animate-spin size-10 bg-gray-400"></span>
+                  </div>
+                )}
+                >
+                  <SimpleEditor
+                    key={editorKey}
+                    ref={editorRef}
+                    defaultValue={markdown}
+                    onChange={handleChange}
+                  />
+                </React.Suspense>
+              </div>
+              <div role="status" aria-live="polite">
+                {error
+                  ? (
+                      <div className="border-t-2 border-red-600 bg-red-50 px-4 py-3 text-sm text-gray-900">
+                        <div className="flex items-start gap-3">
+                          <span aria-hidden className="icon-[material-symbols--error] size-5 shrink-0 text-red-700"></span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-red-800">
+                              {error.line
+                                ? `Error on line ${error.line}${error.column ? `, column ${error.column}` : ''}`
+                                : 'Error'}
+                            </p>
+                            <p className="mt-1 font-mono text-[13px] break-words">{error.message}</p>
+                            <p className="mt-1 text-gray-600">The preview shows the last version without errors.</p>
+                          </div>
+                          {error.line
+                            ? (
+                                <button
+                                  type="button"
+                                  onClick={() => editorRef.current?.goToLine(error.line!, error.column)}
+                                  className="h-8 shrink-0 inline-flex items-center px-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 cursor-pointer"
+                                >
+                                  Go to line
+                                  {' '}
+                                  {error.line}
+                                </button>
+                              )
+                            : null}
+                        </div>
+                      </div>
+                    )
+                  : null}
+              </div>
             </div>
           </Splitter.Panel>
           <Splitter.ResizeTrigger id="a:b" aria-label="Resize" className="items-center group outline-none tablet:flex h-full w-1.5 bg-gray-300 hover:bg-blue-500 hover:outline-2 [[data-focus]]:bg-blue-500 transition-colors duration-300" />
@@ -232,7 +272,7 @@ function NewPreview() {
             {/* Preview */}
             <div className={cx('h-full')}>
               <div className="h-full bg-white relative">
-                <Preview content={markdown} />
+                <Preview html={result?.html ?? ''} toc={result?.toc ?? ''} />
               </div>
             </div>
           </Splitter.Panel>

@@ -17,6 +17,10 @@ The preview supports the components the [Blue Button site](https://github.com/CM
 
 The editor's content is saved to the browser's `localStorage` on every change, so it survives reloads. It is only stored on that browser and device. **Reset** (with a confirmation prompt) clears the saved copy and restores the default example content. To share a document, copy the markdown.
 
+## Errors
+
+When the MDX can't be compiled, the error appears at the bottom of the editor pane with its line and column, and **Go to line** moves the cursor there. The preview keeps showing the last version without errors. Errors only appear once typing pauses, so half-typed tags don't flash an error.
+
 ## Page layout and table of contents
 
 The preview uses the same layout as the site's `DocsLayout`. **Show Navbar**, **Show Sidebar** and **Show TOC** in the settings menu toggle the sample header, the sample side navigation and the table of contents.

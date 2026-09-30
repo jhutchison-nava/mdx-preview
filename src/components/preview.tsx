@@ -4,7 +4,6 @@
 import * as React from 'react'
 
 import { Route } from 'src/routes/index'
-import { compileMdx } from 'src/utils/compile-mdx'
 
 import uswdsCss from '../styles/uswds/preview.scss?url'
 
@@ -13,7 +12,7 @@ import uswdsJs from '../../node_modules/@uswds/uswds/dist/js/uswds.js?url'
 import uswdsHeader from '../components/uswds/header.html?raw'
 import uswdsSideNav from '../components/uswds/side-navigation.html?raw'
 
-export default function Preview({ content }: { content: string }) {
+export default function Preview({ html, toc }: { html: string, toc: string }) {
   const {
     show_navbar: showNavbar,
     show_sidebar: showSideNav,
@@ -22,9 +21,7 @@ export default function Preview({ content }: { content: string }) {
 
   const iframeRef = React.useRef<HTMLIFrameElement | null>(null)
 
-  const sendHTML = React.useCallback(async () => {
-    const { html, toc } = await compileMdx(content)
-
+  const sendHTML = React.useCallback(() => {
     if (iframeRef.current?.contentWindow) {
       iframeRef.current.contentWindow.postMessage({
         html,
@@ -34,7 +31,7 @@ export default function Preview({ content }: { content: string }) {
         showToc: Boolean(showToc),
       }, '*')
     }
-  }, [content, showNavbar, showSideNav, showToc])
+  }, [html, toc, showNavbar, showSideNav, showToc])
 
   React.useEffect(() => {
     sendHTML()
