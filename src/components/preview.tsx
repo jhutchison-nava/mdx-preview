@@ -6,7 +6,8 @@ import * as React from 'react'
 import { Route } from 'src/routes/index'
 import { compileMdx } from 'src/utils/compile-mdx'
 
-import uswdsCss from '../../node_modules/@uswds/uswds/dist/css/uswds.css?url'
+import uswdsCss from '../styles/uswds/preview.scss?url'
+
 import uswdsJsInit from '../../node_modules/@uswds/uswds/dist/js/uswds-init.js?url'
 import uswdsJs from '../../node_modules/@uswds/uswds/dist/js/uswds.js?url'
 import uswdsHeader from '../components/uswds/header.html?raw'
@@ -52,6 +53,8 @@ export default function Preview({ content }: { content: string }) {
       // The first message can fire before the iframe's listener exists
       onLoad={sendHTML}
       sandbox="allow-scripts allow-same-origin"
+      // Lets code block copy buttons use the clipboard
+      allow="clipboard-write"
       srcDoc={`<!DOCTYPE html>
           <html lang="en">
           <head>
@@ -66,6 +69,7 @@ export default function Preview({ content }: { content: string }) {
                         const content = document.getElementById('content')
                         if (content) {
                           content.innerHTML = e.data.html
+                          runScripts(content)
                         }
                       }
                       if (typeof e.data.showNavbar !== 'undefined') {
@@ -87,21 +91,33 @@ export default function Preview({ content }: { content: string }) {
                           }
                       }
                   })
-                  function setHtml(html) {
-                    const content = document.getElementById('content')
+                  // Scripts inserted with innerHTML don't run. Expressive Code's scripts
+                  // watch the DOM for new code blocks, so each only needs to run once.
+                  const ranScripts = new Set()
+                  function runScripts(root) {
+                    root.querySelectorAll('script').forEach((inert) => {
+                      if (!ranScripts.has(inert.textContent)) {
+                        ranScripts.add(inert.textContent)
+                        const script = document.createElement('script')
+                        script.type = inert.type
+                        script.textContent = inert.textContent
+                        document.head.appendChild(script)
+                      }
+                      inert.remove()
+                    })
                   }
               </script>
           </head>
           <body>
             <div id="navbar" class="border-bottom border-base-lighter" style="display: ${initialState.showNavbar ? 'block' : 'none'};">${uswdsHeader}</div>
-            <div class="usa-section">
+            <main class="usa-section">
               <div class="grid-container">
                 <div class="grid-row grid-gap">
                   <div id="sidenav" style="display: ${initialState.showSideNav ? 'block' : 'none'};" class="display-none desktop:display-block desktop:grid-col-3 order-last desktop:order-first">${uswdsSideNav}</div>
-                  <div id="content" class="desktop:grid-col usa-prose"></div>
+                  <div id="content" class="desktop:grid-col"></div>
                 </div>
               </div>
-            </div>
+            </main>
             </body>
             <script src="${uswdsJs}"></script>
           </html>`}

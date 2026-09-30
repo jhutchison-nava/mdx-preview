@@ -1,4 +1,6 @@
-const initialContent = `# Welcome to the MDX Editor!
+const initialContent = `---
+title: "Welcome to the MDX Editor"
+---
 
 Edit the markdown on the left to see it rendered with the Blue Button site's components. Your changes are saved in this browser.
 
@@ -48,6 +50,20 @@ Your terms of service should explain the rules for using your app.
 
 Digital health applications can use Blue Button to give Medicare enrollees a more comprehensive view of their health data.[^1]
 </IconList>
+
+## Code blocks
+
+\`\`\`bash title=Terminal
+curl --header "Authorization: Bearer <YOUR ACCESS TOKEN>" \\
+  "https://sandbox.bluebutton.cms.gov/v2/fhir/ExplanationOfBenefit/"
+\`\`\`
+
+\`\`\`json
+{
+  "resourceType": "Bundle",
+  "total": 99
+}
+\`\`\`
 
 ## Table
 

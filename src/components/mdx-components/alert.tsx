@@ -50,7 +50,8 @@ export function Alert({
   heading,
   headingAs = 'p',
   noIcon,
-  role = 'alert',
+  // Matches the site: content alerts are regions, not live `role="alert"` announcements
+  role = 'region',
   size,
   variant,
   ...props

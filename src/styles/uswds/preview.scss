@@ -1,0 +1,77 @@
+// Stylesheet for the preview iframe, matching the Blue Button site.
+// _uswds-theme.scss and _uswds-theme-custom-styles.scss are copied unchanged from
+// bluebutton-site-static/src/assets/sass; the rules below mirror its styles.scss,
+// minus the Tealium consent dialog styles.
+
+@forward "uswds-theme";
+@forward "uswds";
+@forward "uswds-theme-custom-styles";
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 800;
+  src: url(@fontsource-variable/open-sans/files/open-sans-latin-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+main h2,
+main h3,
+main h4,
+main h5,
+main h6,
+[data-footnote-ref] {
+  scroll-margin-top: 6.5rem;
+}
+
+.expressive-code {
+  margin-top: 1rem;
+}
+
+.usa-prose code {
+  background-color: #f0f0f0;
+  padding: .125rem .25rem;
+  word-wrap: break-word;
+  color: #B9323F;
+}
+
+[data-footnote-backref] {
+  // Prevents '↩' character (used in footnotes) from rendering as an emoji
+  font-family: sans-serif;
+}
+
+.usa-link--external::after {
+  margin-top: 0;
+}
+
+// This is added to better display links with underscores
+.usa-link {
+  text-underline-offset: 4px
+}
+
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.focus-ring-within {
+  &:focus-within {
+    outline-offset: 0;
+    outline: .25rem solid #00bde3;
+  }
+}
+
+// Used by remark-gfm for the "Footnotes" label
+.sr-only {
+  @extend .usa-sr-only;
+}

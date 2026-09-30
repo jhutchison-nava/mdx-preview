@@ -50,7 +50,7 @@ export function AccordionItem({
   heading,
   headingAs = 'div',
   id,
-  isExpanded = false,
+  isExpanded,
   ...props
 }: AccordionItemProps) {
   const Element = headingAs

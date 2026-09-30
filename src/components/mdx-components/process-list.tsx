@@ -17,22 +17,20 @@ export function ProcessList({
   )
 }
 
+// Like the Blue Button component, this reads `className` (not `class`) and doesn't render a heading
 export type ProcessListItemProps = {
   children?: React.ReactNode
-  class?: string
   className?: string
-  // Accepted for parity with the Blue Button component, which doesn't render them
   heading?: string
   headingAs?: 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 }
 
 export function ProcessListItem({
   children,
-  class: classAttr,
   className,
 }: ProcessListItemProps) {
   return (
-    <li className={cx('usa-process-list__item', classAttr, className)}>
+    <li className={cx('usa-process-list__item', className)}>
       <div className="usa-prose">
         {children}
       </div>

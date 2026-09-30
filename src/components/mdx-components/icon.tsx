@@ -24,15 +24,19 @@ export type IconProps = VariantProps<typeof iconStyles> & {
   className?: string
 }
 
-// Inlines the SVG like Astro's SVG components do, so it can be styled with USWDS classes
+// Inlines the SVG like Astro's SVG components do: the source <svg> attributes are kept
+// (minus xmlns), and the USWDS classes and aria-hidden are added
 export function Icon({ icon, color, size, className }: IconProps) {
-  const viewBox = icon.match(/viewBox="([^"]+)"/)?.[1]
-  const body = icon.replace(/^[\s\S]*?<svg[^>]*>|<\/svg>\s*$/g, '')
+  const [, attrs = '', body = ''] = icon.match(/<svg([^>]*)>([\s\S]*)<\/svg>/) ?? []
+  const svgAttributes = Object.fromEntries(
+    [...attrs.matchAll(/([\w:-]+)="([^"]*)"/g)]
+      .filter(([, name]) => name !== 'xmlns')
+      .map(([, name, value]) => [name, value]),
+  )
 
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={viewBox}
+      {...svgAttributes}
       className={iconStyles({ size, color, className })}
       aria-hidden="true"
       dangerouslySetInnerHTML={{ __html: body }}
